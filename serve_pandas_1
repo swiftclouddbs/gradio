@@ -1,0 +1,40 @@
+import gradio as gr
+import pandas as pd
+
+# Load the CSV file outside the function to avoid reloading it on each call
+df = pd.read_csv("./Systems_Full_Inventory.csv")
+
+# Convert columns to string dtype
+df['SYSTEM'] = df['SYSTEM'].astype(str)
+df['APPLICATION'] = df['APPLICATION'].astype(str)
+df['PRIMARY TECHNICAL CONTACT'] = df['PRIMARY TECHNICAL CONTACT'].astype(str)
+df['ADDITIONAL CONTACTS'] = df['ADDITIONAL CONTACTS'].astype(str)
+df['INTERNAL IP'] = df['INTERNAL IP'].astype(str)
+df['EXTERNAL IP'] = df['EXTERNAL IP'].astype(str)
+
+# Define the function for Gradio
+def lookup_func(system_query):
+    result = df.loc[
+        (df['SYSTEM'].str.contains(system_query, case=False, na=False) |
+         df['INTERNAL IP'].str.contains(system_query, case=False, na=False) |
+         df['EXTERNAL IP'].str.contains(system_query, case=False, na=False))
+    ]
+    final = result[['APPLICATION', 'PRIMARY TECHNICAL CONTACT', 'ADDITIONAL CONTACTS']]
+
+    if len(final) == 0:
+        return "Not found!"
+    
+    return final.to_string(index=False)
+
+# Create a Gradio interface
+iface = gr.Interface(
+    fn=lookup_func,              # Function to be called
+    inputs=gr.Textbox(label="System Query"),  # Text input for system query
+    outputs=gr.Textbox(label="Results"),      # Text output for results
+    title="System Lookup",       # Optional: Title of the interface
+    description="Enter a system name or IP address to get contact information."  # Optional: Description
+)
+
+# Launch the interface
+if __name__ == "__main__":
+    iface.launch(server_name="0.0.0.0", server_port=7860)
