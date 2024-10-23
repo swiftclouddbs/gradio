@@ -6,7 +6,7 @@ from langchain.document_loaders import PyPDFLoader
 import google.generativeai as ai
 
 # Set your Gemini API key
-ai.configure(api_key="AIzaSyAUvJhcDh9ZkdQbVNf4alQl5ZKVWfJsKtw")
+ai.configure(api_key="secret!")
 
 # Create a model instance
 model = ai.GenerativeModel(model_name="gemini-1.5-pro")
