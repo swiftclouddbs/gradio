@@ -19,9 +19,9 @@ def process_query(query, pdf_file, text_file, url):
         prompt = query
 
     ai.configure(api_key="AIzaSyAUvJhcDh9ZkdQbVNf4alQl5ZKVWfJsKtw")
-    model = ai.GenerativeModel(model_name="gemini-1.5-pro")
+    model = ai.GenerativeModel(model_name="gemini-1.5-flash")
     response = model.generate_content(prompt)
-    token_usage = model.token_usage
+    token_usage = model.count_tokens(prompt)
     return response.text, f"Tokens Used: {token_usage}"
 
 def load_pdf(pdf_file):
