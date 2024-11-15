@@ -1,0 +1,50 @@
+import gradio as gr
+import langchain
+from langchain.document_loaders import PyPDFLoader
+import google.generativeai as ai
+
+# Set your Gemini API key
+ai.configure(api_key="secret!")
+
+# Create a model instance
+model = ai.GenerativeModel(model_name="gemini-1.5-flash")
+
+# Define the paths to your two PDF files
+pdf_file1_path = "./NIST.SP.800-171r3.pdf"
+pdf_file2_path = "./NIST.SP.800-53r5.pdf"
+
+def process_query(query, pdf_file, pdf_mode):
+    if pdf_file:
+        pdf_text = load_pdf(pdf_file)
+    elif pdf_mode == "PDF 1":
+        pdf_text = load_pdf(pdf_file1_path)
+    else:
+        pdf_text = load_pdf(pdf_file2_path)
+
+    prompt = query + "\n" + pdf_text
+    response = model.generate_content(prompt)
+    return response.text
+
+def load_pdf(pdf_file):
+    loader = PyPDFLoader(pdf_file)
+    documents = loader.load()
+    pdf_text = "\n".join([doc.page_content for doc in documents])
+    return pdf_text
+
+with gr.Blocks() as iface:
+#    gr.Interface(title = "NIST Doc & PDF Question-Answering Tool")
+    iface.title = "NIST & PDF Question-Answering Tool"
+    gr.HTML("""<h1>NIST & PDF Question-Answering Tool</h1>""")
+    
+    with gr.Row():
+        query_box = gr.Textbox(label="Your Question")
+        pdf_file = gr.File(label="Upload PDF (optional)")
+    with gr.Row():
+        pdf_mode = gr.Radio(["NIST.SP.800-171r3", "NIST.SP.800-53r5"], label="Select PDF")
+    response_box = gr.Textbox(label="Response")
+
+    gr.Button("Submit").click(fn=process_query, inputs=[query_box, pdf_file, pdf_mode], outputs=response_box)
+
+# Launch the Gradio app
+if __name__ == "__main__":
+    iface.launch(server_name="0.0.0.0", server_port=7860)
