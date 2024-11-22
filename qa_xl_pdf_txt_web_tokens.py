@@ -1,3 +1,5 @@
+#This script depends on the LLM having a large context.  Written for Gemini.
+
 import gradio as gr
 import langchain
 from langchain.document_loaders import PyPDFLoader, TextLoader
