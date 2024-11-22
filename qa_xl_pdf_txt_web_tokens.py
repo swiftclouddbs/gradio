@@ -22,7 +22,7 @@ def process_query(query, pdf_file, text_file, excel_file, url):
     else:
         prompt = query
 
-    ai.configure(api_key="AIzaSyAUvJhcDh9ZkdQbVNf4alQl5ZKVWfJsKtw")
+    ai.configure(api_key="secret!")
     model = ai.GenerativeModel(model_name="gemini-1.5-flash")
     response = model.generate_content(prompt)
     token_usage = model.count_tokens(prompt)
