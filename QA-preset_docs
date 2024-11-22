@@ -1,3 +1,5 @@
+#Gives preset documents for script to use.  Only good if LLM has large context window.
+
 import gradio as gr
 import langchain
 from langchain.document_loaders import PyPDFLoader
