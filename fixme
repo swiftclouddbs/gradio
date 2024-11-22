@@ -1,0 +1,103 @@
+##Need to migrate some components.  Time to learn about LCEL
+
+#Script needs to run in same directory as vectorstore
+
+import gradio as gr
+import chromadb
+from langchain_nomic.embeddings import NomicEmbeddings
+from langchain.vectorstores import Chroma
+from langchain.llms import Ollama
+from langchain.chains import RetrievalQA
+##from langchain_core.output_parsers import StrOutputParser
+##from langchain_core.runnables import RunnablePassthrough
+##from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+
+
+
+def process_query(query):
+    result = qa(query)
+    return result
+
+iface = gr.Interface(
+    fn=process_query,
+    inputs=gr.Textbox(lines=2, label="Enter your query"),
+    outputs=gr.Textbox(lines=5, label="Response"),
+    title="Ask a Question About America",
+    description="Ask me anything about America!"
+)
+
+# Connect to the ChromaDB client
+client = chromadb.Client()  # Replace with your ChromaDB path
+
+# Create embeddings
+embedding_model = NomicEmbeddings(model="nomic-embed-text-v1.5", inference_mode="local")
+
+# Load the Chroma collection
+collection_name = "America"
+
+# Specify the directory where the Chroma vector data is stored
+PERSIST_DIRECTORY = "./persist_nov_22_b"  # Update with your directory path
+
+# Connect to your Chroma database (vector store) with persistence
+vectorstore = Chroma(
+    collection_name=collection_name, 
+    embedding_function=embedding_model,
+    persist_directory=PERSIST_DIRECTORY  # Specify persistent directory
+)
+
+##Uncomment when a prompt is needed
+##prompt = ChatPromptTemplate.from_messages(
+##    [
+##        (
+##            "system",
+##            "You are a helpful assistant. Answer all questions to the best of your ability.",
+##        ),
+##        MessagesPlaceholder(variable_name="messages"),
+##    ]
+##)
+
+
+# Create the LLM
+llm = Ollama(model="llama3.1")
+
+
+#Deprecated:
+# Create the QA chain
+qa = RetrievalQA.from_chain_type(
+    llm=llm,
+    retriever=vectorstore.as_retriever(), 
+#   This is where the output format is determined
+#   chain_type_kwargs={"prompt": "Answer the question: {query}\n\n{context}"},
+    verbose=True
+)
+
+
+
+#Don't think we want this in gradio
+#qa.invoke("What are autonomous agents?")
+
+
+def process_query(query):
+    result = qa(query)
+    return result
+
+iface = gr.Interface(
+    fn=process_query,
+    inputs=gr.Textbox(lines=2, label="Enter your query"),
+    outputs=gr.Textbox(lines=5, label="Response"),
+    title="Ask a Question About America",
+    description="Ask me anything about America!"
+)
+
+#New style.  Need to migrate to this format.
+##qa = (
+##    {
+##        "context": vectorstore.as_retriever(),
+###        "question": inputs,
+##    }
+##    | prompt
+##    | llm
+##    | StrOutputParser()
+##)
+
+iface.launch(server_name="0.0.0.0", server_port=7860)
