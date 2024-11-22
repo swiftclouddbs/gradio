@@ -1,1 +1,1 @@
-Many of these scripts are written to use the Gemini LLM API.
+Here are the front-ends for our RAG apps and other useful tools.
